@@ -6,6 +6,7 @@
 </ul>
 {% endif %}
 <form name="{{ form_definition.name }}" action="{{ form_definition.action }}" method="{{ form_definition.method }}">
+{% csrf_token %}
 {{ form.as_table }}
 <input type="submit" value="{% if form_definition.submit_label %}{{ form_definition.submit_label }}{% else %}{% trans "Submit" %}{% endif %}" />
 </form>
