@@ -1,0 +1,6 @@
+include LICENSE
+include README.md
+
+recursive-include form_designer/locale *
+recursive-include form_designer/media *
+recursive-include form_designer/templates *
