@@ -166,7 +166,7 @@ class FormDefinitionField(models.Model):
     def ____init__(self, field_class=None, name=None, required=None, widget=None, label=None, initial=None, help_text=None, *args, **kwargs):
         super(FormDefinitionField, self).__init__(*args, **kwargs)
         self.name = name
-        self.field_class = field_class
+        self.field_class = field_class  
         self.required = required
         self.widget = widget
         self.label = label
