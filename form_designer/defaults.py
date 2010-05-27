@@ -22,19 +22,22 @@ FORM_DESIGNER_WIDGET_CLASSES = (
     ('widgets.Textarea', _('Text area')),
     ('widgets.PasswordInput', _('Password input')),
     ('widgets.HiddenInput', _('Hidden input')),
+    ('widgets.RadioSelect', _('Radio button')),
 )
 
 FORM_DESIGNER_FORM_TEMPLATES = (
     ('', _('Default')),
     ('html/formdefinition/forms/as_p.html', _('as paragraphs')),
     ('html/formdefinition/forms/as_table.html', _('as table')),
+    ('html/formdefinition/forms/as_ul.html', _('as unordered list')),
+    ('html/formdefinition/forms/custom.html', _('custom implementation')),
 )
 
 # Sequence of two-tuples like (('your_app.models.ModelName', 'My Model'), ...) for limiting the models available to ModelChoiceField and ModelMultipleChoiceField.
 # If None, any model can be chosen by entering it as a string
 FORM_DESIGNER_CHOICE_MODEL_CHOICES = None
 
-FORM_DESIGNER_DEFAULT_FORM_TEMPLATE = 'html/formdefinition/forms/as_p.html'
+FORM_DESIGNER_DEFAULT_FORM_TEMPLATE = 'html/formdefinition/forms/as_ul.html'
 
 # semicolon is Microsoft Excel default
 FORM_DESIGNER_CSV_EXPORT_DELIMITER = ';'
