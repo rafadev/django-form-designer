@@ -8,7 +8,10 @@ import re
 from pickled_object_field import PickledObjectField
 from model_name_field import ModelNameField
 from template_field import TemplateTextField, TemplateCharField
+from easymode.i18n.decorators import I18n
 
+
+@I18n('title', 'mail_subject', 'mail_to', 'success_message', 'error_message', 'submit_label', 'message_template')
 class FormDefinition(models.Model):
     name = models.SlugField(_('Name'), max_length=255, unique=True)
     title = models.CharField(_('Title'), max_length=255, blank=True, null=True)
@@ -124,6 +127,8 @@ class FormLog(models.Model):
         verbose_name_plural = _('Form logs')
         ordering = ['-created']
 
+
+@I18n('label', 'help_text', 'initial', 'choice_labels', 'choice_values')
 class FormDefinitionField(models.Model):
 
     form_definition = models.ForeignKey(FormDefinition)

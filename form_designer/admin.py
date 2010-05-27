@@ -6,6 +6,9 @@ from django.db import models
 from django.conf import settings
 import os
 
+from easymode.i18n.admin.decorators import L10n
+
+
 class FormDefinitionFieldInlineForm(forms.ModelForm):
     class Meta:
         model = FormDefinitionField
@@ -15,6 +18,8 @@ class FormDefinitionFieldInlineForm(forms.ModelForm):
             raise forms.ValidationError(_('This field class requires a model.'))
         return self.cleaned_data['choice_model']
 
+
+@L10n
 class FormDefinitionFieldInline(admin.StackedInline):
     form = FormDefinitionFieldInlineForm
     model = FormDefinitionField
@@ -28,6 +33,7 @@ class FormDefinitionFieldInline(admin.StackedInline):
         (_('Choices'), {'fields': ['choice_values', 'choice_labels']}),
         (_('Model Choices'), {'fields': ['choice_model', 'choice_model_empty_label']}),
     ]
+
 
 class FormDefinitionForm(forms.ModelForm):
     class Meta:
@@ -61,6 +67,8 @@ class FormDefinitionForm(forms.ModelForm):
             )
         """
 
+
+@L10n(FormDefinition)
 class FormDefinitionAdmin(admin.ModelAdmin):
     fieldsets = [
         (_('Basic'), {'fields': ['name', 'method', 'action', 'title', 'allow_get_initial', 'log_data', 'success_redirect', 'success_clear']}),
@@ -73,6 +81,7 @@ class FormDefinitionAdmin(admin.ModelAdmin):
     inlines = [
         FormDefinitionFieldInline,
     ]
+
 
 class FormLogAdmin(admin.ModelAdmin):
     list_display = ('form_no_link', 'created', 'id', 'data_html')
