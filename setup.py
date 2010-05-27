@@ -10,5 +10,6 @@ setup(
     packages=[
         'form_designer',
         'form_designer.templatetags',
+        'form_designer.migrations',
     ]
 )
