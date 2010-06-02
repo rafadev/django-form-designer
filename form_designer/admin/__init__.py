@@ -1,12 +1,18 @@
+import csv
 import os
 from django.contrib import admin
 from django import forms
 from django.utils.translation import ugettext as _
 from django.db import models
-from django.conf import settings
+from django.conf import settings as django_settings
+from django.conf.urls.defaults import patterns, url
+from django.contrib.admin.views.main import ChangeList
+from django.db.models import Count
+from django.http import HttpResponse
 
 from form_designer.models import FormDefinition, FormDefinitionField, FormLog
-from form_designer.settings import MEDIA_URL
+from form_designer import settings
+from form_designer.templatetags.friendly import friendly
 
 class FormDefinitionFieldInlineForm(forms.ModelForm):
     class Meta:
@@ -40,11 +46,11 @@ class FormDefinitionForm(forms.ModelForm):
         js = []
         if hasattr(settings, 'CMS_MEDIA_URL'):
             # Use jQuery bundled with django_cms if installed
-            js.append(os.path.join(settings.CMS_MEDIA_URL, 'js/lib/jquery.js'))
+            js.append(os.path.join(django_settings.CMS_MEDIA_URL, 'js/lib/jquery.js'))
         elif hasattr(settings, 'JQUERY_URL'):
-            js.append(MEDIA_URL + 'js/jquery.js')
+            js.append(settings.MEDIA_URL + 'js/jquery.js')
         js.extend(
-            ['%s%s' % (MEDIA_URL, url) for url in (
+            ['%s%s' % (settings.MEDIA_URL, url) for url in (
                 'js/jquery-ui.js',
                 'js/jquery-inline-positioning.js',
                 'js/jquery-inline-rename.js',
@@ -68,6 +74,8 @@ class FormDefinitionAdmin(admin.ModelAdmin):
         FormDefinitionFieldInline,
     ]
 
+# Returns a QuerySet with the same ordering and filtering like the one that would be visible in Django admin
+
 class FormLogAdmin(admin.ModelAdmin):
     list_display = ('form_no_link', 'created', 'id', 'data_html')
     list_filter = ('form_definition',)
@@ -80,10 +88,64 @@ class FormLogAdmin(admin.ModelAdmin):
     form_no_link.allow_tags = True
     form_no_link.short_description = _('Form')
 
+    def get_urls(self):
+        urls = super(FormLogAdmin, self).get_urls()
+        return  patterns('',
+            url(r'^export_csv/$', self.admin_site.admin_view(self.export_csv), name='form_designer_export_csv'),
+        ) + urls
+
     def data_html(self, obj):
         return obj.form_definition.compile_message(obj.data, 'html/formdefinition/data_message.html')
     data_html.allow_tags = True
     data_html.short_description = _('Data')
+
+    def get_change_list_query_set(self, request):
+        cl = ChangeList(request, self.model, self.list_display, self.list_display_links, self.list_filter,
+            self.date_hierarchy, self.search_fields, self.list_select_related, self.list_per_page, self.list_editable, self)
+        return cl.get_query_set()
+
+    def export_csv(self, request):
+        response = HttpResponse(mimetype='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=' + settings.CSV_EXPORT_FILENAME
+        writer = csv.writer(response, delimiter=settings.CSV_EXPORT_DELIMITER)
+        qs = self.get_change_list_query_set(request)
+
+        distinct_forms = qs.aggregate(Count('form_definition', distinct=True))['form_definition__count']
+
+        include_created = settings.CSV_EXPORT_INCLUDE_CREATED
+        include_pk = settings.CSV_EXPORT_INCLUDE_PK
+        include_header = settings.CSV_EXPORT_INCLUDE_HEADER and distinct_forms == 1
+        include_form = settings.CSV_EXPORT_INCLUDE_FORM and distinct_forms > 1
+
+        if include_header:
+            header = [] 
+            if include_form:
+                header.append(_('Form'))
+            if include_created:
+                header.append(_('Created'))
+            if include_pk:
+                header.append(_('ID'))
+            for field in qs.all()[0].data:
+                header.append(field['label'] if field['label'] else field['key'])
+            writer.writerow(header)
+
+        for entry in qs:
+            row = []
+            if include_form:
+                row.append(entry.form_definition)
+            if include_created:
+                row.append(entry.created)
+            if include_pk:
+                row.append(entry.pk)
+            for field in entry.data:
+                value = friendly(field['value'])
+                if not isinstance(value, basestring):
+                    value = unicode(value)
+                value = value.encode(settings.CSV_EXPORT_ENCODING)
+                row.append(value)
+            writer.writerow(row)
+        return response
+
 
     def changelist_view(self, request, extra_context=None):
         from django.core.urlresolvers import reverse, NoReverseMatch 
@@ -93,10 +155,9 @@ class FormLogAdmin(admin.ModelAdmin):
         except TypeError, KeyError:
             query_string = ''
         try:
-            extra_context['export_csv_url'] = reverse('form_designer_export_csv')+query_string
+            extra_context['export_csv_url'] = reverse('admin:form_designer_export_csv')+query_string
         except NoReverseMatch:
             request.user.message_set.create(message=_('CSV export is not enabled.'))
-        
         return super(FormLogAdmin, self).changelist_view(request, extra_context)
 
 admin.site.register(FormDefinition, FormDefinitionAdmin)
