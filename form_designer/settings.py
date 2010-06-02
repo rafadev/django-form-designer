@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
+MEDIA_URL = getattr(settings, 'FORM_DESIGNER_MEDIA_URL', '%sform_designer/' % settings.MEDIA_URL)
+
 FIELD_CLASSES = getattr(settings, 'FORM_DESIGNER_FIELD_CLASSES', (
     ('forms.CharField', _('Text')),
     ('forms.EmailField', _('E-mail address')),

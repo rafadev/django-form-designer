@@ -6,6 +6,7 @@ from django.db import models
 from django.conf import settings
 
 from form_designer.models import FormDefinition, FormDefinitionField, FormLog
+from form_designer.settings import MEDIA_URL
 
 class FormDefinitionFieldInlineForm(forms.ModelForm):
     class Meta:
@@ -31,36 +32,28 @@ class FormDefinitionFieldInline(admin.StackedInline):
     ]
 
 class FormDefinitionForm(forms.ModelForm):
+
     class Meta:
         model = FormDefinition
-    class Media:
-        js = ([
-                'form_designer/js/lib/jquery.js' if not hasattr(settings, 'JQUERY_JS') else settings.JQUERY_JS,
-            ] if hasattr(settings, 'JQUERY_JS') or not hasattr(settings, 'CMS_MEDIA_URL') else [os.path.join(settings.CMS_MEDIA_URL, path) for path in (
-                # Use jQuery bundled with django_cms if installed
-                'js/lib/jquery.js',
-            )])+[
-                'form_designer/js/lib/jquery-ui.js' if not hasattr(settings, 'JQUERY_UI_JS') else settings.JQUERY_UI_JS,
-            ]+[os.path.join('form_designer/js/lib/django-admin-tweaks-js-lib/js', basename) for basename in (
-                'jquery-inline-positioning.js',
-                'jquery-inline-rename.js',
-                'jquery-inline-collapsible.js',
-                'jquery-inline-fieldset-collapsible.js',
-                'jquery-inline-prepopulate-label.js',
-            )]
-        """
-        js = (
-            'form_designer/js/lib/jquery.js' if not hasattr(settings, 'JQUERY_JS') else settings.JQUERY_JS,
-            'form_designer/js/lib/jquery-ui.js' if not hasattr(settings, 'JQUERY_UI_JS') else settings.JQUERY_UI_JS,
-            ]+([os.path.join('form_designer/js/lib/django-admin-tweaks-js-lib/js', path) for path in (
-                'jquery-inline-rename.js',
-                'form_designer/js/lib/django-admin-tweaks-js-lib/js/jquery-inline-positioning.js',
-                'form_designer/js/lib/django-admin-tweaks-js-lib/js/jquery-inline-collapsible.js',
-                'form_designer/js/lib/django-admin-tweaks-js-lib/js/jquery-inline-fieldset-collapsible.js',
-                'form_designer/js/lib/django-admin-tweaks-js-lib/js/jquery-inline-prepopulate-label.js',
-            )]
-            )
-        """
+
+    def _media(self):
+        js = []
+        if hasattr(settings, 'CMS_MEDIA_URL'):
+            # Use jQuery bundled with django_cms if installed
+            js.append(os.path.join(settings.CMS_MEDIA_URL, 'js/lib/jquery.js'))
+        elif hasattr(settings, 'JQUERY_URL'):
+            js.append(MEDIA_URL + 'js/jquery.js')
+        js.extend(
+            ['%s%s' % (MEDIA_URL, url) for url in (
+                'js/jquery-ui.js',
+                'js/jquery-inline-positioning.js',
+                'js/jquery-inline-rename.js',
+                'js/jquery-inline-collapsible.js',
+                'js/jquery-inline-fieldset-collapsible.js',
+                'js/jquery-inline-prepopulate-label.js',
+            )])
+        return forms.Media(js=js)
+    media = property(_media)
 
 class FormDefinitionAdmin(admin.ModelAdmin):
     fieldsets = [
