@@ -74,8 +74,6 @@ class FormDefinitionAdmin(admin.ModelAdmin):
         FormDefinitionFieldInline,
     ]
 
-# Returns a QuerySet with the same ordering and filtering like the one that would be visible in Django admin
-
 class FormLogAdmin(admin.ModelAdmin):
     list_display = ('form_no_link', 'created', 'id', 'data_html')
     list_filter = ('form_definition',)
