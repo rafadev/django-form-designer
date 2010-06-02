@@ -3,8 +3,8 @@ function makeCollapsible(target, item, collapsible, triggerTarget, setInitStatus
 	var triggerExpand = gettext('Show');
 	var triggerCollapse = gettext('Hide');
 	var triggerLink = '<a href="javascript:void(0)"></a>';
-	var triggerPrepend = ' ( ';
-	var triggerAppend = ' )';
+	var triggerPrepend = ' (';
+	var triggerAppend = ')';
 	
 	$(target).find(item).each(function(i) {
 		$(this).find(collapsible).hide();
@@ -32,7 +32,7 @@ function makeCollapsible(target, item, collapsible, triggerTarget, setInitStatus
 			}
 		}
 
-		trigger.live('click', function(event) {
+		trigger.click(function(event) {
 			event.preventDefault();
 			toggleCollapse(null, 'normal')
 		})
