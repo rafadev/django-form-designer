@@ -19,6 +19,7 @@ setup(
     author_email = 'philomat@popkultur.net',
     packages = [
         'form_designer',
+        'form_designer.migrations',
         'form_designer.templatetags',
     ],
     package_data = {
