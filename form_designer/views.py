@@ -20,7 +20,7 @@ class DesignedForm(forms.Form):
 
     def add_defined_field(self, def_field, initial_data=None):
         if initial_data and initial_data.has_key(def_field.name):
-            if not def_field.field_class in ('forms.MultipleChoiceField', 'forms.ModelMultipleChoiceField'):
+            if not def_field.field_class in ('django.forms.MultipleChoiceField', 'django.forms.ModelMultipleChoiceField'):
                 def_field.initial = initial_data.get(def_field.name)
             else:
                 def_field.initial = initial_data.getlist(def_field.name)
@@ -40,7 +40,7 @@ def process_form(request, form_definition, context={}, is_cms_plugin=False):
     if request.method == 'GET' and request.GET.get(form_definition.submit_flag_name):
         form = DesignedForm(form_definition, None, request.GET)
         is_submit = True
-    
+
     if is_submit:
         if form.is_valid():
             # Successful submission

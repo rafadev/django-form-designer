@@ -19,7 +19,7 @@ class FormDefinitionFieldInlineForm(forms.ModelForm):
         model = FormDefinitionField
 
     def clean_choice_model(self):
-        if not self.cleaned_data['choice_model'] and self.cleaned_data.has_key('field_class') and self.cleaned_data['field_class'] in ('forms.ModelChoiceField', 'forms.ModelMultipleChoiceField'):
+        if not self.cleaned_data['choice_model'] and self.cleaned_data.has_key('field_class') and self.cleaned_data['field_class'] in ('django.forms.ModelChoiceField', 'django.forms.ModelMultipleChoiceField'):
             raise forms.ValidationError(_('This field class requires a model.'))
         return self.cleaned_data['choice_model']
 
@@ -78,7 +78,7 @@ class FormLogAdmin(admin.ModelAdmin):
     list_display = ('form_no_link', 'created', 'id', 'data_html')
     list_filter = ('form_definition',)
     list_display_links = ()
-    
+
     # Disabling all edit links: Hack as found at http://stackoverflow.com/questions/1618728/disable-link-to-edit-object-in-djangos-admin-display-list-only
     def form_no_link(self, obj):
         return '<a>'+obj.form_definition.__unicode__()+'</a>'
@@ -116,7 +116,7 @@ class FormLogAdmin(admin.ModelAdmin):
         include_form = settings.CSV_EXPORT_INCLUDE_FORM and distinct_forms > 1
 
         if include_header:
-            header = [] 
+            header = []
             if include_form:
                 header.append(_('Form'))
             if include_created:
@@ -146,7 +146,7 @@ class FormLogAdmin(admin.ModelAdmin):
 
 
     def changelist_view(self, request, extra_context=None):
-        from django.core.urlresolvers import reverse, NoReverseMatch 
+        from django.core.urlresolvers import reverse, NoReverseMatch
         extra_context = extra_context or {}
         try:
             query_string = '?'+request.META['QUERY_STRING']

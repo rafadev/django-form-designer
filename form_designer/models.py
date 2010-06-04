@@ -57,7 +57,7 @@ class FormDefinition(models.Model):
         for field in self.formdefinitionfield_set.all():
             dict[field.name] = field
         return dict
-        
+
     def get_form_data(self, form):
         data = []
         field_dict = self.get_field_dict()
@@ -70,7 +70,7 @@ class FormDefinition(models.Model):
                     value = value.__form_data__()
                 data.append({'name': key, 'label': form.fields[key].label, 'value': value})
         return data
-        
+
     def get_form_data_dict(self, form_data):
         dict = {}
         for field in form_data:
@@ -116,23 +116,23 @@ class FormDefinition(models.Model):
         message = self.compile_message(form_data)
         context_dict = self.get_form_data_dict(form_data)
 
-        import re 
+        import re
         mail_to = re.compile('\s*[,;]+\s*').split(self.mail_to)
         for key, email in enumerate(mail_to):
             mail_to[key] = self.string_template_replace(email, context_dict)
-        
+
         mail_from = self.mail_from or None
         if mail_from:
             mail_from = self.string_template_replace(mail_from, context_dict)
-        
+
         if self.mail_subject:
             mail_subject = self.string_template_replace(self.mail_subject, context_dict)
         else:
             mail_subject = self.title
-        
+
         import logging
         logging.debug('Mail: '+repr(mail_from)+' --> '+repr(mail_to));
-        
+
         from django.core.mail import send_mail
         send_mail(mail_subject, message, mail_from or None, mail_to, fail_silently=False)
 
@@ -209,20 +209,20 @@ class FormDefinitionField(models.Model):
             'initial': self.initial if self.initial else None,
             'help_text': self.help_text,
         }
-        
-        if self.field_class in ('forms.CharField', 'forms.EmailField', 'forms.RegexField'):
+
+        if self.field_class in ('django.forms.CharField', 'django.forms.EmailField', 'django.forms.RegexField'):
             args.update({
                 'max_length': self.max_length,
                 'min_length': self.min_length,
             })
 
-        if self.field_class in ('forms.IntegerField', 'forms.DecimalField'):
+        if self.field_class in ('django.forms.IntegerField', 'django.forms.DecimalField'):
             args.update({
                 'max_value': int(self.max_value) if self.max_value != None else None,
                 'min_value': int(self.min_value) if self.min_value != None else None,
             })
 
-        if self.field_class == 'forms.DecimalField':
+        if self.field_class == 'django.forms.DecimalField':
             args.update({
                 'max_value': self.max_value,
                 'min_value': self.min_value,
@@ -230,13 +230,13 @@ class FormDefinitionField(models.Model):
                 'decimal_places': self.decimal_places,
             })
 
-        if self.field_class == 'forms.RegexField':
+        if self.field_class == 'django.forms.RegexField':
             if self.regex:
                 args.update({
                     'regex': self.regex
                 })
 
-        if self.field_class in ('forms.ChoiceField', 'forms.MultipleChoiceField'):
+        if self.field_class in ('django.forms.ChoiceField', 'django.forms.MultipleChoiceField'):
             if self.choice_values:
                 choices = []
                 regex = re.compile('[\s]*\n[\s]*')
@@ -252,12 +252,12 @@ class FormDefinitionField(models.Model):
                     'choices': tuple(choices)
                 })
 
-        if self.field_class in ('forms.ModelChoiceField', 'forms.ModelMultipleChoiceField'):
+        if self.field_class in ('django.forms.ModelChoiceField', 'django.forms.ModelMultipleChoiceField'):
             args.update({
                 'queryset': ModelNameField.get_model_from_string(self.choice_model).objects.all()
             })
-        
-        if self.field_class == 'forms.ModelChoiceField':
+
+        if self.field_class == 'django.forms.ModelChoiceField':
             args.update({
                 'empty_label': self.choice_model_empty_label
             })
@@ -266,7 +266,7 @@ class FormDefinitionField(models.Model):
             args.update({
                 'widget': get_class(self.widget)()
             })
-        
+
         return args
 
     class Meta:
