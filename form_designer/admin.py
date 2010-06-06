@@ -9,6 +9,7 @@ from django.conf.urls.defaults import patterns, url
 from django.contrib.admin.views.main import ChangeList
 from django.db.models import Count
 from django.http import HttpResponse
+from django.utils.encoding import smart_str
 
 from form_designer.models import FormDefinition, FormDefinitionField, FormLog
 from form_designer import settings
@@ -125,7 +126,7 @@ class FormLogAdmin(admin.ModelAdmin):
                 header.append(_('ID'))
             for field in qs.all()[0].data:
                 header.append(field['label'] if field['label'] else field['key'])
-            writer.writerow(header)
+            writer.writerow([smart_str(cell) for cell in header])
 
         for entry in qs:
             row = []
