@@ -1,5 +1,7 @@
+import os
 import random
 from datetime import datetime
+from os import path
 from os.path import join
 
 from django.core.context_processors import csrf
@@ -60,12 +62,16 @@ def process_form(request, form_definition, context={}, is_cms_plugin=False):
                         random.randrange(0, 10000),
                         file_obj.name,
                     )
-                    destination = open(join(settings.MEDIA_ROOT, 'contact_form', file_name), 'wb+')
+                    
+                    if not os.path.exists(join(settings.MEDIA_ROOT, 'form_uploads')):
+                        os.mkdir(join(settings.MEDIA_ROOT, 'form_uploads'))
+                    
+                    destination = open(join(settings.MEDIA_ROOT, 'form_uploads', file_name), 'wb+')
                     for chunk in file_obj.chunks():
                         destination.write(chunk)
                     destination.close()
-                    form.cleaned_data[file_key] = join(settings.MEDIA_URL, 'contact_form', file_name)
-                    files.append(join(settings.MEDIA_ROOT, 'contact_form', file_name))
+                    form.cleaned_data[file_key] = join(settings.MEDIA_URL, 'form_uploads', file_name)
+                    files.append(join(settings.MEDIA_ROOT, 'form_uploads', file_name))
             
             # Successful submission
             if 'django_notify' in settings.INSTALLED_APPS:
