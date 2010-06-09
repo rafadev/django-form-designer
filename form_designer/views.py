@@ -1,3 +1,7 @@
+import random
+from datetime import datetime
+from os.path import join
+
 from django.core.context_processors import csrf
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
@@ -23,9 +27,8 @@ class DesignedForm(forms.Form):
             if not def_field.field_class in ('forms.MultipleChoiceField', 'forms.ModelMultipleChoiceField'):
                 def_field.initial = initial_data.get(def_field.name)
             else:
-                def_field.initial = initial_data.getlist(def_field.name)                
+                def_field.initial = initial_data.getlist(def_field.name)
         self.fields[def_field.name] = eval(def_field.field_class)(**def_field.get_form_field_init_args())        
-
 
 def process_form(request, form_definition, context={}, is_cms_plugin=False):
     success_message = form_definition.success_message or _('Thank you, the data was submitted successfully.')
@@ -39,7 +42,7 @@ def process_form(request, form_definition, context={}, is_cms_plugin=False):
     
     # If the form has been submitted...
     if request.method == 'POST' and request.POST.get(form_definition.submit_flag_name):
-        form = DesignedForm(form_definition, None, request.POST)
+        form = DesignedForm(form_definition, None, request.POST, request.FILES)
         is_submit = True
     if request.method == 'GET' and request.GET.get(form_definition.submit_flag_name):
         form = DesignedForm(form_definition, None, request.GET)
@@ -47,6 +50,23 @@ def process_form(request, form_definition, context={}, is_cms_plugin=False):
         
     if is_submit:
         if form.is_valid():
+            # Handle file uploads
+            files = []
+            if hasattr(request, 'FILES'):
+                for file_key in request.FILES:
+                    file_obj = request.FILES[file_key]
+                    file_name = '%s.%s_%s' % (
+                        datetime.now().strftime('%Y%m%d'),
+                        random.randrange(0, 10000),
+                        file_obj.name,
+                    )
+                    destination = open(join(settings.MEDIA_ROOT, 'contact_form', file_name), 'wb+')
+                    for chunk in file_obj.chunks():
+                        destination.write(chunk)
+                    destination.close()
+                    form.cleaned_data[file_key] = join(settings.MEDIA_URL, 'contact_form', file_name)
+                    files.append(join(settings.MEDIA_ROOT, 'contact_form', file_name))
+            
             # Successful submission
             if 'django_notify' in settings.INSTALLED_APPS:
                 request.notifications.success(success_message)
@@ -56,7 +76,7 @@ def process_form(request, form_definition, context={}, is_cms_plugin=False):
             if form_definition.log_data:
                 form_definition.log(form)
             if form_definition.mail_to:
-                form_definition.send_mail(form)
+                form_definition.send_mail(form, files)
             if form_definition.success_redirect and not is_cms_plugin:
                 # TODO Redirection does not work for cms plugin
                 return HttpResponseRedirect(form_definition.action or '?')

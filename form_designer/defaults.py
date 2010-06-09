@@ -15,6 +15,7 @@ FORM_DESIGNER_FIELD_CLASSES = (
     ('forms.ModelChoiceField', _('Model Choice')),
     ('forms.ModelMultipleChoiceField', _('Model Multiple Choice')),
     ('forms.RegexField', _('Regex')),
+    ('forms.FileField', _('File')),
 )
 
 FORM_DESIGNER_WIDGET_CLASSES = (
