@@ -63,15 +63,15 @@ def process_form(request, form_definition, context={}, is_cms_plugin=False):
                         file_obj.name,
                     )
                     
-                    if not os.path.exists(join(settings.MEDIA_ROOT, 'form_uploads')):
-                        os.mkdir(join(settings.MEDIA_ROOT, 'form_uploads'))
+                    if not os.path.exists(settings.FORM_UPLOADS):
+                        os.mkdir(settings.FORM_UPLOADS)
                     
-                    destination = open(join(settings.MEDIA_ROOT, 'form_uploads', file_name), 'wb+')
+                    destination = open(join(settings.FORM_UPLOADS, file_name), 'wb+')
                     for chunk in file_obj.chunks():
                         destination.write(chunk)
                     destination.close()
-                    form.cleaned_data[file_key] = join(settings.MEDIA_URL, 'form_uploads', file_name)
-                    files.append(join(settings.MEDIA_ROOT, 'form_uploads', file_name))
+                    form.cleaned_data[file_key] = join(settings.FORM_UPLOADS_URL, file_name)
+                    files.append(join(settings.FORM_UPLOADS, file_name))
             
             # Successful submission
             if 'django_notify' in settings.INSTALLED_APPS:
