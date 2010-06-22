@@ -9,7 +9,7 @@ from django.conf.urls.defaults import patterns, url
 from django.contrib.admin.views.main import ChangeList
 from django.db.models import Count
 from django.http import HttpResponse
-from django.utils.encoding import smart_str
+from django.utils.encoding import smart_unicode
 
 from form_designer.models import FormDefinition, FormDefinitionField, FormLog
 from form_designer import settings
@@ -126,7 +126,7 @@ class FormLogAdmin(admin.ModelAdmin):
                 header.append(_('ID'))
             for field in qs.all()[0].data:
                 header.append(field['label'] if field['label'] else field['key'])
-            writer.writerow([smart_str(cell) for cell in header])
+            writer.writerow([smart_unicode(cell, encoding=settings.CSV_EXPORT_ENCODING) for cell in header])
 
         for entry in qs:
             row = []
@@ -138,10 +138,8 @@ class FormLogAdmin(admin.ModelAdmin):
                 row.append(entry.pk)
             for field in entry.data:
                 value = friendly(field['value'])
-                if not isinstance(value, basestring):
-                    value = unicode(value)
-                value = value.encode(settings.CSV_EXPORT_ENCODING)
-                row.append(value)
+                row.append(smart_unicode(
+                    value, encoding=settings.CSV_EXPORT_ENCODING))
             writer.writerow(row)
         return response
 
