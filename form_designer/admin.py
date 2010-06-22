@@ -3,7 +3,6 @@ import os
 from django.contrib import admin
 from django import forms
 from django.utils.translation import ugettext as _
-from django.db import models
 from django.conf import settings as django_settings
 from django.conf.urls.defaults import patterns, url
 from django.contrib.admin.views.main import ChangeList
@@ -23,6 +22,7 @@ class FormDefinitionFieldInlineForm(forms.ModelForm):
         if not self.cleaned_data['choice_model'] and self.cleaned_data.has_key('field_class') and self.cleaned_data['field_class'] in ('django.forms.ModelChoiceField', 'django.forms.ModelMultipleChoiceField'):
             raise forms.ValidationError(_('This field class requires a model.'))
         return self.cleaned_data['choice_model']
+
 
 class FormDefinitionFieldInline(admin.StackedInline):
     form = FormDefinitionFieldInlineForm
@@ -51,7 +51,7 @@ class FormDefinitionForm(forms.ModelForm):
         elif hasattr(django_settings, 'JQUERY_URL'):
             js.append(settings.MEDIA_URL + 'js/jquery.js')
         js.extend(
-            ['%s%s' % (settings.MEDIA_URL, url) for url in (
+            ['%s%s' % (settings.MEDIA_URL, path) for path in (
                 'js/jquery-ui.js',
                 'js/jquery-inline-positioning.js',
                 'js/jquery-inline-rename.js',
@@ -149,7 +149,7 @@ class FormLogAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         try:
             query_string = '?'+request.META['QUERY_STRING']
-        except TypeError, KeyError:
+        except (TypeError, KeyError):
             query_string = ''
         try:
             extra_context['export_csv_url'] = reverse('admin:form_designer_export_csv')+query_string

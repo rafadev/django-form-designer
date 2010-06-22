@@ -2,7 +2,6 @@ from django import forms
 from django.forms import widgets
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
-from django.db import models
 from django.utils.translation import ugettext as _
 from django.http import HttpResponseRedirect
 from django.conf import settings
