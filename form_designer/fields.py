@@ -28,7 +28,7 @@ class ModelNameField(models.CharField):
     @staticmethod
     def get_model_from_string(model_path):
         return ModelNameFormField.get_model_from_string(model_path)
-        
+
     def formfield(self, **kwargs):
         # This is a fairly standard way to set up some defaults
         # while letting the caller override them.
