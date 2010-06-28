@@ -1,4 +1,3 @@
-from django import forms
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
@@ -8,7 +7,7 @@ from django.contrib import messages
 from django.core.context_processors import csrf
 
 from form_designer.forms import DesignedForm
-from form_designer.models import FormDefinition, get_class
+from form_designer.models import FormDefinition
 
 def process_form(request, form_definition, context={}, is_cms_plugin=False):
     success_message = form_definition.success_message or _('Thank you, the data was submitted successfully.')

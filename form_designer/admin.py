@@ -1,29 +1,16 @@
 import csv
-import os
 from django.contrib import admin
-from django import forms
 from django.utils.translation import ugettext as _, ugettext_lazy
-from django.conf import settings as django_settings
 from django.conf.urls.defaults import patterns, url
 from django.contrib.admin.views.main import ChangeList
 from django.db.models import Count
 from django.http import HttpResponse
-from django.utils.encoding import smart_unicode, force_unicode, smart_str
+from django.utils.encoding import smart_unicode, smart_str
 
 
 from form_designer.models import FormDefinition, FormDefinitionField, FormLog
 from form_designer import settings
 from form_designer.templatetags.friendly import friendly
-
-class FormDefinitionFieldInlineForm(forms.ModelForm):
-    class Meta:
-        model = FormDefinitionField
-
-    def clean_choice_model(self):
-        if not self.cleaned_data['choice_model'] and self.cleaned_data.has_key('field_class') and self.cleaned_data['field_class'] in ('django.forms.ModelChoiceField', 'django.forms.ModelMultipleChoiceField'):
-            raise forms.ValidationError(_('This field class requires a model.'))
-        return self.cleaned_data['choice_model']
-
 
 class FormDefinitionFieldInline(admin.StackedInline):
     form = FormDefinitionFieldInlineForm
@@ -38,30 +25,6 @@ class FormDefinitionFieldInline(admin.StackedInline):
         (_('Choices'), {'fields': ['choice_values', 'choice_labels']}),
         (_('Model Choices'), {'fields': ['choice_model', 'choice_model_empty_label']}),
     ]
-
-class FormDefinitionForm(forms.ModelForm):
-
-    class Meta:
-        model = FormDefinition
-
-    def _media(self):
-        js = []
-        if hasattr(django_settings, 'CMS_MEDIA_URL'):
-            # Use jQuery bundled with django_cms if installed
-            js.append(os.path.join(django_settings.CMS_MEDIA_URL, 'js/lib/jquery.js'))
-        elif hasattr(django_settings, 'JQUERY_URL'):
-            js.append(settings.MEDIA_URL + 'js/jquery.js')
-        js.extend(
-            ['%s%s' % (settings.MEDIA_URL, path) for path in (
-                'js/jquery-ui.js',
-                'js/jquery-inline-positioning.js',
-                'js/jquery-inline-rename.js',
-                'js/jquery-inline-collapsible.js',
-                'js/jquery-inline-fieldset-collapsible.js',
-                'js/jquery-inline-prepopulate-label.js',
-            )])
-        return forms.Media(js=js)
-    media = property(_media)
 
 class FormDefinitionAdmin(admin.ModelAdmin):
     fieldsets = [
