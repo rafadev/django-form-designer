@@ -2,7 +2,7 @@ import csv
 import os
 from django.contrib import admin
 from django import forms
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext_lazy
 from django.conf import settings as django_settings
 from django.conf.urls.defaults import patterns, url
 from django.contrib.admin.views.main import ChangeList
@@ -80,6 +80,7 @@ class FormLogAdmin(admin.ModelAdmin):
     list_display = ('form_no_link', 'created', 'id', 'data_html')
     list_filter = ('form_definition',)
     list_display_links = ()
+    actions = ['export_csv']
 
     # Disabling all edit links: Hack as found at http://stackoverflow.com/questions/1618728/disable-link-to-edit-object-in-djangos-admin-display-list-only
     def form_no_link(self, obj):
@@ -104,13 +105,14 @@ class FormLogAdmin(admin.ModelAdmin):
             self.date_hierarchy, self.search_fields, self.list_select_related, self.list_per_page, self.list_editable, self)
         return cl.get_query_set()
 
-    def export_csv(self, request):
+    def export_csv(self, request, queryset=None):
         response = HttpResponse(mimetype='text/csv')
         response['Content-Disposition'] = 'attachment; filename=' + settings.CSV_EXPORT_FILENAME
         writer = csv.writer(response, delimiter=settings.CSV_EXPORT_DELIMITER)
-        qs = self.get_change_list_query_set(request)
+        if queryset is None:
+            queryset = self.get_change_list_query_set(request)
 
-        distinct_forms = qs.aggregate(Count('form_definition', distinct=True))['form_definition__count']
+        distinct_forms = queryset.aggregate(Count('form_definition', distinct=True))['form_definition__count']
 
         include_created = settings.CSV_EXPORT_INCLUDE_CREATED
         include_pk = settings.CSV_EXPORT_INCLUDE_PK
@@ -125,11 +127,11 @@ class FormLogAdmin(admin.ModelAdmin):
                 header.append(_('Created'))
             if include_pk:
                 header.append(_('ID'))
-            for field in qs.all()[0].data:
+            for field in queryset[0].data:
                 header.append(field['label'] if field['label'] else field['key'])
             writer.writerow([smart_str(cell, encoding=settings.CSV_EXPORT_ENCODING) for cell in header])
 
-        for entry in qs:
+        for entry in queryset:
             row = []
             if include_form:
                 row.append(entry.form_definition)
@@ -143,7 +145,7 @@ class FormLogAdmin(admin.ModelAdmin):
                     value, encoding=settings.CSV_EXPORT_ENCODING))
             writer.writerow(row)
         return response
-
+    export_csv.short_description = ugettext_lazy("Export selected %(verbose_name_plural)s as CSV")
 
     def changelist_view(self, request, extra_context=None):
         from django.core.urlresolvers import reverse, NoReverseMatch
@@ -160,4 +162,3 @@ class FormLogAdmin(admin.ModelAdmin):
 
 admin.site.register(FormDefinition, FormDefinitionAdmin)
 admin.site.register(FormLog, FormLogAdmin)
-
