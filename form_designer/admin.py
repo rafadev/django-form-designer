@@ -7,7 +7,14 @@ from django.db.models import Count
 from django.http import HttpResponse
 from django.utils.encoding import smart_unicode, smart_str
 
+try:
+    import xlwt
+except ImportError:
+    xlwt_installed = False
+else:
+    xlwt_installed = True
 
+from form_designer.forms import FormDefinitionForm, FormDefinitionFieldInlineForm
 from form_designer.models import FormDefinition, FormDefinitionField, FormLog
 from form_designer import settings
 from form_designer.templatetags.friendly import friendly
@@ -44,6 +51,8 @@ class FormLogAdmin(admin.ModelAdmin):
     list_filter = ('form_definition',)
     list_display_links = ()
     actions = ['export_csv']
+    if xlwt_installed:
+        actions.append('export_xls')
 
     # Disabling all edit links: Hack as found at http://stackoverflow.com/questions/1618728/disable-link-to-edit-object-in-djangos-admin-display-list-only
     def form_no_link(self, obj):
@@ -53,10 +62,14 @@ class FormLogAdmin(admin.ModelAdmin):
     form_no_link.short_description = _('Form')
 
     def get_urls(self):
-        urls = super(FormLogAdmin, self).get_urls()
-        return  patterns('',
-            url(r'^export_csv/$', self.admin_site.admin_view(self.export_csv), name='form_designer_export_csv'),
-        ) + urls
+        urls = patterns('',
+            url(r'^export/csv/$', self.admin_site.admin_view(self.export_csv), name='form_designer_export_csv'),
+        )
+        if xlwt_installed:
+            urls += patterns('',
+                url(r'^export/xls/$', self.admin_site.admin_view(self.export_xls), name='form_designer_export_xls'),
+            )
+        return urls + super(FormLogAdmin, self).get_urls()
 
     def data_html(self, obj):
         return obj.form_definition.compile_message(obj.data, 'html/formdefinition/data_message.html')
@@ -110,6 +123,54 @@ class FormLogAdmin(admin.ModelAdmin):
         return response
     export_csv.short_description = ugettext_lazy("Export selected %(verbose_name_plural)s as CSV")
 
+    def export_xls(self, request, queryset=None):
+        import xlwt
+
+        response = HttpResponse(mimetype='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename=%s.xls' % unicode(self.model._meta.verbose_name_plural)
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet(unicode(self.model._meta.verbose_name_plural))
+        if queryset is None:
+            queryset = self.get_change_list_query_set(request)
+
+        distinct_forms = queryset.aggregate(Count('form_definition', distinct=True))['form_definition__count']
+
+        include_created = settings.CSV_EXPORT_INCLUDE_CREATED
+        include_pk = settings.CSV_EXPORT_INCLUDE_PK
+        include_header = settings.CSV_EXPORT_INCLUDE_HEADER and distinct_forms == 1
+        include_form = settings.CSV_EXPORT_INCLUDE_FORM and distinct_forms > 1
+
+        if include_header:
+            header = []
+            if include_form:
+                header.append(_('Form'))
+            if include_created:
+                header.append(_('Created'))
+            if include_pk:
+                header.append(_('ID'))
+            for field in queryset[0].data:
+                header.append(field['label'] if field['label'] else field['key'])
+            for i, f in enumerate(header):
+                ws.write(0, i, smart_unicode(f, encoding=settings.CSV_EXPORT_ENCODING))
+
+        for i, entry in enumerate(queryset):
+            row = []
+            if include_form:
+                row.append(entry.form_definition)
+            if include_created:
+                row.append(entry.created)
+            if include_pk:
+                row.append(entry.pk)
+            for field in entry.data:
+                value = friendly(field['value'])
+                row.append(smart_unicode(
+                    value, encoding=settings.CSV_EXPORT_ENCODING))
+            for j, cell in enumerate(row):
+                ws.write(i+1, j, smart_unicode(cell))
+        wb.save(response)
+        return response
+    export_xls.short_description = ugettext_lazy("Export selected %(verbose_name_plural)s as XLS")
+
     def changelist_view(self, request, extra_context=None):
         from django.core.urlresolvers import reverse, NoReverseMatch
         extra_context = extra_context or {}
@@ -121,6 +182,11 @@ class FormLogAdmin(admin.ModelAdmin):
             extra_context['export_csv_url'] = reverse('admin:form_designer_export_csv')+query_string
         except NoReverseMatch:
             request.user.message_set.create(message=_('CSV export is not enabled.'))
+        if xlwt_installed:
+            try:
+                extra_context['export_xls_url'] = reverse('admin:form_designer_export_xls')+query_string
+            except NoReverseMatch:
+                request.user.message_set.create(message=_('XLS export is not enabled.'))
         return super(FormLogAdmin, self).changelist_view(request, extra_context)
 
 admin.site.register(FormDefinition, FormDefinitionAdmin)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-28 12:47+0200\n"
+"POT-Creation-Date: 2010-06-28 14:41+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,74 +16,83 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: admin.py:24
-msgid "This field class requires a model."
-msgstr ""
-
-#: admin.py:33 admin.py:68
+#: admin.py:27 admin.py:38
 msgid "Basic"
 msgstr ""
 
-#: admin.py:34
+#: admin.py:28
 msgid "Display"
 msgstr ""
 
-#: admin.py:35 settings.py:7
+#: admin.py:29 settings.py:7
 msgid "Text"
 msgstr ""
 
-#: admin.py:36
+#: admin.py:30
 msgid "Numbers"
 msgstr ""
 
-#: admin.py:37 settings.py:20
+#: admin.py:31 settings.py:20
 msgid "Regex"
 msgstr ""
 
-#: admin.py:38
+#: admin.py:32
 msgid "Choices"
 msgstr ""
 
-#: admin.py:39
+#: admin.py:33
 msgid "Model Choices"
 msgstr ""
 
-#: admin.py:69
+#: admin.py:39
 msgid "Mail form"
 msgstr ""
 
-#: admin.py:70
+#: admin.py:40
 msgid "Templates"
 msgstr ""
 
-#: admin.py:71
+#: admin.py:41
 msgid "Messages"
 msgstr ""
 
-#: admin.py:90 admin.py:125 cms_plugins.py:12 models.py:52 models.py:148
-#: models.py:284
+#: admin.py:62 admin.py:101 admin.py:146 cms_plugins.py:12 models.py:52
+#: models.py:148 models.py:284
 msgid "Form"
 msgstr ""
 
-#: admin.py:101 models.py:149
+#: admin.py:77 models.py:149
 msgid "Data"
 msgstr ""
 
-#: admin.py:127 models.py:147
+#: admin.py:103 admin.py:148 models.py:147
 msgid "Created"
 msgstr ""
 
-#: admin.py:129
+#: admin.py:105 admin.py:150
 msgid "ID"
 msgstr ""
 
-#: admin.py:148
+#: admin.py:124
 #, python-format
 msgid "Export selected %(verbose_name_plural)s as CSV"
 msgstr ""
 
-#: admin.py:160
+#: admin.py:172
+#, python-format
+msgid "Export selected %(verbose_name_plural)s as XLS"
+msgstr ""
+
+#: admin.py:184
 msgid "CSV export is not enabled."
+msgstr ""
+
+#: admin.py:189
+msgid "XLS export is not enabled."
+msgstr ""
+
+#: forms.py:33
+msgid "This field class requires a model."
 msgstr ""
 
 #: models.py:34 models.py:162
@@ -363,16 +372,20 @@ msgstr ""
 msgid "custom implementation"
 msgstr ""
 
-#: views.py:14
+#: views.py:13
 msgid "Thank you, the data was submitted successfully."
 msgstr ""
 
-#: views.py:15
+#: views.py:14
 msgid "The data could not be submitted, please try again."
 msgstr ""
 
 #: templates/admin/form_designer/formlog/change_list.html:9
 msgid "Export CSV"
+msgstr ""
+
+#: templates/admin/form_designer/formlog/change_list.html:16
+msgid "Export XLS"
 msgstr ""
 
 #: templates/html/formdefinition/forms/as_p.html:11
