@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-02 20:13+0200\n"
+"POT-Creation-Date: 2010-06-28 12:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,24 +16,89 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: cms_plugins.py:12 models.py:33 models.py:121 models.py:257
-#: admin/__init__.py:88 admin/views.py:37
+#: admin.py:24
+msgid "This field class requires a model."
+msgstr "Diese Feld-Klasse benötigt ein Modell."
+
+#: admin.py:33 admin.py:68
+msgid "Basic"
+msgstr "Grundlegendes"
+
+#: admin.py:34
+msgid "Display"
+msgstr "Darstellung"
+
+#: admin.py:35 settings.py:7
+msgid "Text"
+msgstr "Text"
+
+#: admin.py:36
+msgid "Numbers"
+msgstr "Zahlen"
+
+#: admin.py:37 settings.py:20
+msgid "Regex"
+msgstr "Regex"
+
+#: admin.py:38
+msgid "Choices"
+msgstr "Auswahl"
+
+#: admin.py:39
+msgid "Model Choices"
+msgstr "Modell-Auswahl"
+
+#: admin.py:69
+msgid "Mail form"
+msgstr "Mail-Formular"
+
+#: admin.py:70
+msgid "Templates"
+msgstr "Vorlagen"
+
+#: admin.py:71
+msgid "Messages"
+msgstr "Meldungen"
+
+#: admin.py:90 admin.py:125 cms_plugins.py:12 models.py:52 models.py:148
+#: models.py:284
 msgid "Form"
 msgstr "Formular"
 
-#: models.py:15 models.py:135
+#: admin.py:101 models.py:149
+msgid "Data"
+msgstr "Daten"
+
+#: admin.py:127 models.py:147
+msgid "Created"
+msgstr "Erstellt"
+
+#: admin.py:129
+msgid "ID"
+msgstr "ID"
+
+#: admin.py:148
+#, python-format
+msgid "Export selected %(verbose_name_plural)s as CSV"
+msgstr "Ausgewählte %(verbose_name_plural)s als CSV exportieren"
+
+#: admin.py:160
+msgid "CSV export is not enabled."
+msgstr "CSV-Export ist nicht aktiviert."
+
+#: models.py:34 models.py:162
 msgid "Name"
 msgstr "Name"
 
-#: models.py:16
+#: models.py:35
 msgid "Title"
 msgstr "Titel"
 
-#: models.py:17
+#: models.py:36
 msgid "Target URL"
 msgstr "Ziel-URL"
 
-#: models.py:17
+#: models.py:36
 msgid ""
 "If you leave this empty, the page where the form resides will be requested, "
 "and you can use the mail form and logging features. You can also send data "
@@ -45,329 +110,286 @@ msgstr ""
 "werden. Es ist auch möglich, Daten an externe Sites zu senden: Beispielweise "
 "\"http://www.google.ch/search\" eingeben, um ein Suchformular zu erstellen."
 
-#: models.py:18
+#: models.py:37
 msgid "Send form data to e-mail address"
 msgstr "Formulardaten an E-Mail-Adresse senden"
 
-#: models.py:19
+#: models.py:38
 msgid "Sender address"
 msgstr "Absender-Adresse"
 
-#: models.py:20
+#: models.py:39
 msgid "e-Mail subject"
 msgstr "E-Mail-Betreff"
 
-#: models.py:21
+#: models.py:40
 msgid "Method"
 msgstr "Methode"
 
-#: models.py:22
+#: models.py:41
 msgid "Success message"
 msgstr "Erfolgsmeldung"
 
-#: models.py:23
+#: models.py:42
 msgid "Error message"
 msgstr "Fehlermeldung"
 
-#: models.py:24
+#: models.py:43
 msgid "Submit button label"
 msgstr "Beschriftung der Senden-Schaltfläche"
 
-#: models.py:25
+#: models.py:44
 msgid "Log form data"
 msgstr "Formulardaten loggen"
 
-#: models.py:25
+#: models.py:44
 msgid "Logs all form submissions to the database."
 msgstr "Speichert alle Formular-Übermittlungen in der Datenbank."
 
-#: models.py:26
+#: models.py:45
 msgid "Redirect after success"
 msgstr "Bei Erfolg weiterleiten"
 
-#: models.py:27
+#: models.py:46
 msgid "Clear form after success"
 msgstr "Bei Erfolg Formular zurücksetzen"
 
-#: models.py:28
+#: models.py:47
 msgid "Allow initial values via URL"
 msgstr "Initialwerte via URL erlauben"
 
-#: models.py:28
+#: models.py:47
 msgid ""
 "If enabled, you can fill in form fields by adding them to the query string."
 msgstr ""
 "Falls aktiviert, ist es möglich, Formularfelder vorauszufüllen, indem sie "
 "dem Query-String hinzugefügt werden."
 
-#: models.py:29
+#: models.py:48
 msgid "Message template"
 msgstr "Nachrichten-Vorlage"
 
-#: models.py:29
+#: models.py:48
+#, fuzzy
 msgid ""
-"Available context: \"data\" (a list containing a dictionary for each form "
-"field, each containing the elements \"name\", \"label\", \"value\")."
+"Your form fields are available as template context. Example: \"{{ message }}"
+"\" if you have a field named `message`. To iterate over all fields, use the "
+"variable `data` (a list containing a dictionary for each form field, each "
+"containing the elements `name`, `label`, `value`)."
 msgstr ""
 "Verfügbarer Kontext: \"data\" (Eine List mit Dictionaries für jedes Formular "
 "und Feld, jeweils mit den folgenden Elementen: \"name\", \"label\", \"value"
 "\")."
 
-#: models.py:30
+#: models.py:49
 msgid "Form template"
 msgstr "Formular-Vorlage"
 
-#: models.py:34
+#: models.py:53
 msgid "Forms"
 msgstr "Formulare"
 
-#: models.py:71 models.py:161 models.py:247
+#: models.py:95 models.py:188 models.py:274
 msgid "Fields"
 msgstr "Felder"
 
-#: models.py:120 admin/views.py:39
-msgid "Created"
-msgstr "Erstellt"
-
-#: models.py:122 admin/__init__.py:93
-msgid "Data"
-msgstr "Daten"
-
-#: models.py:125
+#: models.py:152
 msgid "Form log"
 msgstr "Formular-Log"
 
-#: models.py:126
+#: models.py:153
 msgid "Form logs"
 msgstr "Formular-Logs"
 
-#: models.py:132
+#: models.py:159
 msgid "Field class"
 msgstr "Feld-Klasse"
 
-#: models.py:133
+#: models.py:160
 msgid "Position"
 msgstr "Position"
 
-#: models.py:136
+#: models.py:163
 msgid "Label"
 msgstr "Beschriftung"
 
-#: models.py:137
+#: models.py:164
 msgid "Required"
 msgstr "Erforderlich"
 
-#: models.py:138
+#: models.py:165
 msgid "Include in result"
 msgstr "In Resultat einbeziehen"
 
-#: models.py:139
+#: models.py:166
 msgid "Widget"
 msgstr "Widget"
 
-#: models.py:140
+#: models.py:167
 msgid "Initial value"
 msgstr "Initialwert"
 
-#: models.py:141
+#: models.py:168
 msgid "Help text"
 msgstr "Hilfetext"
 
-#: models.py:143
+#: models.py:170
 msgid "Values"
 msgstr "Werte"
 
-#: models.py:143
+#: models.py:170
 msgid "One value per line"
 msgstr "Ein Wert pro Zeile"
 
-#: models.py:144
+#: models.py:171
 msgid "Labels"
 msgstr "Beschriftungen"
 
-#: models.py:144
+#: models.py:171
 msgid "One label per line"
 msgstr "Eine Beschriftung pro Zeile"
 
-#: models.py:146
+#: models.py:173
 msgid "Max. length"
 msgstr "Max. Länge"
 
-#: models.py:147
+#: models.py:174
 msgid "Min. length"
 msgstr "Min. Länge"
 
-#: models.py:148
+#: models.py:175
 msgid "Max. value"
 msgstr "Max. Wert"
 
-#: models.py:149
+#: models.py:176
 msgid "Min. value"
 msgstr "Min. Wert"
 
-#: models.py:150
+#: models.py:177
 msgid "Max. digits"
 msgstr "Max. Ziffern"
 
-#: models.py:151
+#: models.py:178
 msgid "Decimal places"
 msgstr "Dezimalstellen"
 
-#: models.py:153
+#: models.py:180
 msgid "Regular Expression"
 msgstr "Regulärer Ausdruck"
 
-#: models.py:156
+#: models.py:183
 msgid "Data model"
 msgstr "Datenmodell"
 
-#: models.py:157
+#: models.py:184
 msgid "Empty label"
 msgstr "Beschriftung falls leer"
 
-#: models.py:160 models.py:246
+#: models.py:187 models.py:273
 msgid "Field"
 msgstr "Feld"
 
-#: settings.py:5 admin/__init__.py:26
-msgid "Text"
-msgstr "Text"
-
-#: settings.py:6
+#: settings.py:8
 msgid "E-mail address"
 msgstr "E-Mail-Adresse"
 
-#: settings.py:7
+#: settings.py:9
 msgid "Web address"
 msgstr "Web-Adresse"
 
-#: settings.py:8
+#: settings.py:10
 msgid "Number"
 msgstr "Zahl"
 
-#: settings.py:9
+#: settings.py:11
 msgid "Decimal number"
 msgstr "Dezimalzahl"
 
-#: settings.py:10
+#: settings.py:12
 msgid "Yes/No"
 msgstr "Ja/Nein"
 
-#: settings.py:11
+#: settings.py:13
 msgid "Date"
 msgstr "Datum"
 
-#: settings.py:12
+#: settings.py:14
 msgid "Date & time"
 msgstr "Datum & Zeit"
 
-#: settings.py:13
+#: settings.py:15
 msgid "Time"
 msgstr "Zeit"
 
-#: settings.py:14
+#: settings.py:16
 msgid "Choice"
 msgstr "Auswahl"
 
-#: settings.py:15
+#: settings.py:17
 msgid "Multiple Choice"
 msgstr "Mehrfach-Auswahl"
 
-#: settings.py:16
+#: settings.py:18
 msgid "Model Choice"
 msgstr "Modell-Auswahl"
 
-#: settings.py:17
+#: settings.py:19
 msgid "Model Multiple Choice"
 msgstr "Modell-Mehrfach-Auswahl"
 
-#: settings.py:18 admin/__init__.py:28
-msgid "Regex"
-msgstr "Regex"
-
-#: settings.py:22 settings.py:29
+#: settings.py:25 settings.py:33
 msgid "Default"
 msgstr "Voreinstellung"
 
-#: settings.py:23
+#: settings.py:26
 msgid "Text area"
 msgstr "Textfeld"
 
-#: settings.py:24
+#: settings.py:27
 msgid "Password input"
 msgstr "Passwortfeld"
 
-#: settings.py:25
+#: settings.py:28
 msgid "Hidden input"
 msgstr "Versteckter Wert"
 
-#: settings.py:30
+#: settings.py:29
+msgid "Radio button"
+msgstr "Radio-Buttons"
+
+#: settings.py:34
 msgid "as paragraphs"
 msgstr "als Absätze"
 
-#: settings.py:31
+#: settings.py:35
 msgid "as table"
 msgstr "als Tabelle"
 
-#: views.py:30
+#: settings.py:36
+msgid "as unordered list"
+msgstr "als unsortierte Liste"
+
+#: settings.py:37
+msgid "custom implementation"
+msgstr "eigene Implementierung"
+
+#: views.py:14
 msgid "Thank you, the data was submitted successfully."
 msgstr "Vielen Dank, die Daten wurden übermittelt."
 
-#: views.py:31
+#: views.py:15
 msgid "The data could not be submitted, please try again."
 msgstr ""
 "Die Daten konnten nicht übermittelt werden, bitte versuchen Sie es erneut."
-
-#: admin/__init__.py:16
-msgid "This field class requires a model."
-msgstr "Diese Feld-Klasse benötigt ein Modell."
-
-#: admin/__init__.py:24 admin/__init__.py:67
-msgid "Basic"
-msgstr "Grundlegendes"
-
-#: admin/__init__.py:25
-msgid "Display"
-msgstr "Darstellung"
-
-#: admin/__init__.py:27
-msgid "Numbers"
-msgstr "Zahlen"
-
-#: admin/__init__.py:29
-msgid "Choices"
-msgstr "Auswahl"
-
-#: admin/__init__.py:30
-msgid "Model Choices"
-msgstr "Modell-Auswahl"
-
-#: admin/__init__.py:68
-msgid "Mail form"
-msgstr "Mail-Formular"
-
-#: admin/__init__.py:69
-msgid "Templates"
-msgstr "Vorlagen"
-
-#: admin/__init__.py:70
-msgid "Messages"
-msgstr "Meldungen"
-
-#: admin/__init__.py:105
-msgid "CSV export is not enabled."
-msgstr "CSV-Export ist nicht aktiviert."
-
-#: admin/views.py:41
-msgid "ID"
-msgstr "ID"
 
 #: templates/admin/form_designer/formlog/change_list.html:9
 msgid "Export CSV"
 msgstr "CSV exportieren"
 
-#: templates/html/formdefinition/forms/as_p.html:10
-#: templates/html/formdefinition/forms/as_table.html:10
+#: templates/html/formdefinition/forms/as_p.html:11
+#: templates/html/formdefinition/forms/as_table.html:11
+#: templates/html/formdefinition/forms/as_u.html:11
+#: templates/html/formdefinition/forms/custom.html:40
 msgid "Submit"
 msgstr "Absenden"
 
