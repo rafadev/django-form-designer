@@ -11,132 +11,10 @@ from template_field import TemplateTextField, TemplateCharField
 from easymode.i18n.decorators import I18n
 
 
-@I18n('title', 'mail_subject', 'mail_to', 'success_message', 'error_message', 'submit_label', 'message_template')
-class FormDefinition(models.Model):
-    name = models.SlugField(_('Name'), max_length=255, unique=True)
-    title = models.CharField(_('Title'), max_length=255, blank=True, null=True)
-    action = models.URLField(_('Target URL'), help_text=_('If you leave this empty, the page where the form resides will be requested, and you can use the mail form and logging features. You can also send data to external sites: For instance, enter "http://www.google.ch/search" to create a search form.'), max_length=255, blank=True, null=True)
-    mail_to = TemplateCharField(_('Send form data to e-mail address'), help_text=('Separate several addresses with a comma. Your form fields are available as template context. Example: "admin@domain.com, {{ from_email }}" if you have a field named "from_email".'), max_length=255, blank=True, null=True)
-    mail_from = TemplateCharField(_('Sender address'), max_length=255, help_text=('Your form fields are available as template context. Example: "{{ firstname }} {{ lastname }} <{{ from_email }}>" if you have fields named "first_name", "last_name", "from_email".'), blank=True, null=True)
-    mail_subject = TemplateCharField(_('e-Mail subject'), max_length=255, help_text=('Your form fields are available as template context. Example: "Contact form {{ subject }}" if you have a field named "subject".'), blank=True, null=True)
-    method = models.CharField(_('Method'), max_length=10, default="POST", choices = (('POST', 'POST'), ('GET', 'GET')))
-    success_message = models.CharField(_('Success message'), max_length=255, blank=True, null=True)
-    error_message = models.CharField(_('Error message'), max_length=255, blank=True, null=True)
-    submit_label = models.CharField(_('Submit button label'), max_length=255, blank=True, null=True)
-    log_data = models.BooleanField(_('Log form data'), help_text=_('Logs all form submissions to the database.'), default=True)
-    success_redirect = models.BooleanField(_('Redirect after success'), help_text=_('You should install django_notify if you want to enable this.') if not 'django_notify' in settings.INSTALLED_APPS else None, default=False)
-    success_clear = models.BooleanField(_('Clear form after success'), default=True)
-    allow_get_initial = models.BooleanField(_('Allow initial values via URL'), help_text=_('If enabled, you can fill in form fields by adding them to the query string.'), default=True)
-    message_template = TemplateTextField(_('Message template'), help_text=_('Available context: "data" (a list containing a dictionary for each form field, each containing the elements "name", "label", "value").'), blank=True, null=True)
-    form_template_name = models.CharField(_('Form template'), max_length=255, choices=app_settings.get('FORM_DESIGNER_FORM_TEMPLATES'), blank=True, null=True)
-
-    class Meta:
-        verbose_name = _('Form')
-        verbose_name_plural = _('Forms')
-
-    def get_field_dict(self):
-        dict = {}
-        for field in self.formdefinitionfield_set.all():
-            dict[field.name] = field
-        return dict
-        
-    def get_form_data(self, form):
-        data = []
-        field_dict = self.get_field_dict()
-        form_keys = form.fields.keys()
-        def_keys = field_dict.keys()
-        for key in form_keys:
-            if key in def_keys and field_dict[key].include_result:
-                data.append({'name': key, 'label': form.fields[key].label, 'value': form.cleaned_data[key]})
-        return data
-        
-    def get_form_data_dict(self, form_data):
-        dict = {}
-        for field in form_data:
-            dict[field['name']] = field['value']
-        return dict
-
-    def compile_message(self, form_data, template=None):
-        from django.template.loader import get_template
-        from django.template import Context, Template
-        if template:
-            t = get_template(template)
-        elif not self.message_template:
-            t = get_template('txt/formdefinition/data_message.txt')
-        else:
-            t = Template(self.message_template)
-        return t.render(Context({'data': form_data}))
-
-    def count_fields(self):
-        return self.formdefinitionfield_set.count()
-    count_fields.short_description = _('Fields')
-
-    def __unicode__(self):
-        return self.title or self.name
-
-    def log(self, form):
-        FormLog(form_definition=self, data=self.get_form_data(form)).save()
-
-    def string_template_replace(self, text, context_dict):
-        from django.template import Context, Template, TemplateSyntaxError
-        try:
-            t = Template(text)
-            return t.render(Context(context_dict))
-        except TemplateSyntaxError:
-            return text
-
-    def send_mail(self, form, files=[]):
-        form_data = self.get_form_data(form)
-        message = self.compile_message(form_data)
-        context_dict = self.get_form_data_dict(form_data)
-
-        import re 
-        mail_to = re.compile('\s*[,;]+\s*').split(self.mail_to)
-        for key, email in enumerate(mail_to):
-            mail_to[key] = self.string_template_replace(email, context_dict)
-        
-        mail_from = self.mail_from or None
-        if mail_from:
-            mail_from = self.string_template_replace(mail_from, context_dict)
-        
-        if self.mail_subject:
-            mail_subject = self.string_template_replace(self.mail_subject, context_dict)
-        else:
-            mail_subject = self.title
-        
-        import logging
-        logging.debug('Mail: '+repr(mail_from)+' --> '+repr(mail_to));
-        
-        from django.core.mail import EmailMessage
-        message = EmailMessage(mail_subject, message, mail_from or None, mail_to)
-        
-        for file_path in files:
-            message.attach_file(file_path)
-        
-        message.send()
-
-    @property
-    def submit_flag_name(self):
-        name = app_settings.get('FORM_DESIGNER_SUBMIT_FLAG_NAME') % self.name
-        while self.formdefinitionfield_set.filter(name__exact=name).count() > 0:
-            name += '_'
-        return name
-
-class FormLog(models.Model):
-    created = models.DateTimeField(_('Created'), auto_now=True)
-    form_definition = models.ForeignKey(FormDefinition, verbose_name=_('Form'))
-    data = PickledObjectField(_('Data'), null=True, blank=True)
-
-    class Meta:
-        verbose_name = _('Form log')
-        verbose_name_plural = _('Form logs')
-        ordering = ['-created']
-
-
 @I18n('label', 'help_text', 'initial', 'choice_labels', 'choice_values')
 class FormDefinitionField(models.Model):
 
-    form_definition = models.ForeignKey(FormDefinition)
+    form_definition = models.ForeignKey('FormDefinition')
     field_class = models.CharField(_('Field class'), choices=app_settings.get('FORM_DESIGNER_FIELD_CLASSES'), max_length=32)
     position = models.IntegerField(_('Position'), blank=True, null=True)
 
@@ -257,6 +135,130 @@ class FormDefinitionField(models.Model):
 
     def __unicode__(self):
         return self.label if self.label else self.name
+
+
+class FormLog(models.Model):
+    created = models.DateTimeField(_('Created'), auto_now=True)
+    form_definition = models.ForeignKey('FormDefinition', verbose_name=_('Form'))
+    data = PickledObjectField(_('Data'), null=True, blank=True)
+
+    class Meta:
+        verbose_name = _('Form log')
+        verbose_name_plural = _('Form logs')
+        ordering = ['-created']
+
+
+@I18n('title', 'mail_subject', 'mail_to', 'success_message', 'error_message', 'submit_label', 'message_template')
+class FormDefinition(models.Model):
+    name = models.SlugField(_('Name'), max_length=255, unique=True)
+    title = models.CharField(_('Title'), max_length=255, blank=True, null=True)
+    action = models.URLField(_('Target URL'), help_text=_('If you leave this empty, the page where the form resides will be requested, and you can use the mail form and logging features. You can also send data to external sites: For instance, enter "http://www.google.ch/search" to create a search form.'), max_length=255, blank=True, null=True)
+    mail_to = TemplateCharField(_('Send form data to e-mail address'), help_text=('Separate several addresses with a comma. Your form fields are available as template context. Example: "admin@domain.com, {{ from_email }}" if you have a field named "from_email".'), max_length=255, blank=True, null=True)
+    mail_from = TemplateCharField(_('Sender address'), max_length=255, help_text=('Your form fields are available as template context. Example: "{{ firstname }} {{ lastname }} <{{ from_email }}>" if you have fields named "first_name", "last_name", "from_email".'), blank=True, null=True)
+    mail_subject = TemplateCharField(_('e-Mail subject'), max_length=255, help_text=('Your form fields are available as template context. Example: "Contact form {{ subject }}" if you have a field named "subject".'), blank=True, null=True)
+    method = models.CharField(_('Method'), max_length=10, default="POST", choices = (('POST', 'POST'), ('GET', 'GET')))
+    success_message = models.CharField(_('Success message'), max_length=255, blank=True, null=True)
+    error_message = models.CharField(_('Error message'), max_length=255, blank=True, null=True)
+    submit_label = models.CharField(_('Submit button label'), max_length=255, blank=True, null=True)
+    log_data = models.BooleanField(_('Log form data'), help_text=_('Logs all form submissions to the database.'), default=True)
+    success_redirect = models.BooleanField(_('Redirect after success'), help_text=_('You should install django_notify if you want to enable this.') if not 'django_notify' in settings.INSTALLED_APPS else None, default=False)
+    success_clear = models.BooleanField(_('Clear form after success'), default=True)
+    allow_get_initial = models.BooleanField(_('Allow initial values via URL'), help_text=_('If enabled, you can fill in form fields by adding them to the query string.'), default=True)
+    message_template = TemplateTextField(_('Message template'), help_text=_('Available context: "data" (a list containing a dictionary for each form field, each containing the elements "name", "label", "value").'), blank=True, null=True)
+    form_template_name = models.CharField(_('Form template'), max_length=255, choices=app_settings.get('FORM_DESIGNER_FORM_TEMPLATES'), blank=True, null=True)
+
+    class Meta:
+        verbose_name = _('Form')
+        verbose_name_plural = _('Forms')
+
+    def get_field_dict(self):
+        dict = {}
+        for field in self.formdefinitionfield_set.all():
+            dict[field.name] = field
+        return dict
+        
+    def get_form_data(self, form):
+        data = []
+        field_dict = self.get_field_dict()
+        form_keys = form.fields.keys()
+        def_keys = field_dict.keys()
+        for key in form_keys:
+            if key in def_keys and field_dict[key].include_result:
+                data.append({'name': key, 'label': form.fields[key].label, 'value': form.cleaned_data[key]})
+        return data
+        
+    def get_form_data_dict(self, form_data):
+        dict = {}
+        for field in form_data:
+            dict[field['name']] = field['value']
+        return dict
+
+    def compile_message(self, form_data, template=None):
+        from django.template.loader import get_template
+        from django.template import Context, Template
+        if template:
+            t = get_template(template)
+        elif not self.message_template:
+            t = get_template('txt/formdefinition/data_message.txt')
+        else:
+            t = Template(self.message_template)
+        return t.render(Context({'data': form_data}))
+
+    def count_fields(self):
+        return self.formdefinitionfield_set.count()
+    count_fields.short_description = _('Fields')
+
+    def __unicode__(self):
+        return self.title or self.name
+
+    def log(self, form):
+        FormLog(form_definition=self, data=self.get_form_data(form)).save()
+
+    def string_template_replace(self, text, context_dict):
+        from django.template import Context, Template, TemplateSyntaxError
+        try:
+            t = Template(text)
+            return t.render(Context(context_dict))
+        except TemplateSyntaxError:
+            return text
+
+    def send_mail(self, form, files=[]):
+        form_data = self.get_form_data(form)
+        message = self.compile_message(form_data)
+        context_dict = self.get_form_data_dict(form_data)
+
+        import re 
+        mail_to = re.compile('\s*[,;]+\s*').split(self.mail_to)
+        for key, email in enumerate(mail_to):
+            mail_to[key] = self.string_template_replace(email, context_dict)
+        
+        mail_from = self.mail_from or None
+        if mail_from:
+            mail_from = self.string_template_replace(mail_from, context_dict)
+        
+        if self.mail_subject:
+            mail_subject = self.string_template_replace(self.mail_subject, context_dict)
+        else:
+            mail_subject = self.title
+        
+        import logging
+        logging.debug('Mail: '+repr(mail_from)+' --> '+repr(mail_to));
+        
+        from django.core.mail import EmailMessage
+        message = EmailMessage(mail_subject, message, mail_from or None, mail_to)
+        
+        for file_path in files:
+            message.attach_file(file_path)
+        
+        message.send()
+
+    @property
+    def submit_flag_name(self):
+        name = app_settings.get('FORM_DESIGNER_SUBMIT_FLAG_NAME') % self.name
+        while self.formdefinitionfield_set.filter(name__exact=name).count() > 0:
+            name += '_'
+        return name
+
 
 if 'cms' in settings.INSTALLED_APPS:
     from cms.models import CMSPlugin
