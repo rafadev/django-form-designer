@@ -11,6 +11,16 @@ from template_field import TemplateTextField, TemplateCharField
 from easymode.i18n.decorators import I18n
 
 
+if 'cms' in settings.INSTALLED_APPS:
+    from cms.models import CMSPlugin
+
+    class CMSFormDefinition(CMSPlugin):
+        form_definition = models.ForeignKey('FormDefinition', verbose_name=_('Form'))
+
+        def __unicode__(self):
+            return self.form_definition.__unicode__()
+
+
 @I18n('label', 'help_text', 'initial', 'choice_labels', 'choice_values')
 class FormDefinitionField(models.Model):
 
@@ -258,13 +268,3 @@ class FormDefinition(models.Model):
         while self.formdefinitionfield_set.filter(name__exact=name).count() > 0:
             name += '_'
         return name
-
-
-if 'cms' in settings.INSTALLED_APPS:
-    from cms.models import CMSPlugin
-
-    class CMSFormDefinition(CMSPlugin):
-        form_definition = models.ForeignKey(FormDefinition, verbose_name=_('Form'))
-
-        def __unicode__(self):
-            return self.form_definition.__unicode__()
