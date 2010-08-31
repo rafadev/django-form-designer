@@ -7,6 +7,8 @@ from django.core.mail import send_mail
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.importlib import import_module
+from django.contrib.sites.models import Site
+from django.contrib.sites.managers import CurrentSiteManager
 
 from picklefield.fields import PickledObjectField
 from easymode.i18n.decorators import I18n
@@ -34,6 +36,8 @@ def get_class(import_path):
 
 @I18n('title', 'mail_subject', 'mail_to', 'success_message', 'error_message', 'submit_label', 'message_template')
 class FormDefinition(models.Model):
+    site = models.ForeignKey(Site, verbose_name=_('site'))
+    
     name = models.SlugField(_('Name'), max_length=255, unique=True)
     title = models.CharField(_('Title'), max_length=255, blank=True, null=True)
     action = models.URLField(_('Target URL'), help_text=_('If you leave this empty, the page where the form resides will be requested, and you can use the mail form and logging features. You can also send data to external sites: For instance, enter "http://www.google.ch/search" to create a search form.'), max_length=255, blank=True, null=True)
@@ -50,7 +54,8 @@ class FormDefinition(models.Model):
     allow_get_initial = models.BooleanField(_('Allow initial values via URL'), help_text=_('If enabled, you can fill in form fields by adding them to the query string.'), default=True)
     message_template = TemplateTextField(_('Message template'), help_text=_('Your form fields are available as template context. Example: "{{ message }}" if you have a field named `message`. To iterate over all fields, use the variable `data` (a list containing a dictionary for each form field, each containing the elements `name`, `label`, `value`).'), blank=True, null=True)
     form_template_name = models.CharField(_('Form template'), max_length=255, choices=settings.FORM_TEMPLATES, blank=True, null=True)
-
+    
+    
     class Meta:
         verbose_name = _('Form')
         verbose_name_plural = _('Forms')

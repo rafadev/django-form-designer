@@ -56,3 +56,10 @@ class FormDefinitionForm(forms.ModelForm):
             )])
         return forms.Media(js=js)
     media = property(_media)
+
+
+
+class CMSFormDefinitionForm(forms.ModelForm):
+
+    def for_site(self, site):    
+        self.fields['form_definition'].queryset = FormDefinition.objects.filter(site=site.id)
