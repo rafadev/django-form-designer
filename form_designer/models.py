@@ -9,6 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.importlib import import_module
 
 from picklefield.fields import PickledObjectField
+from easymode.i18n.decorators import I18n
 
 from form_designer.fields import TemplateTextField, TemplateCharField, ModelNameField
 from form_designer import settings
@@ -30,6 +31,8 @@ def get_class(import_path):
         raise ImproperlyConfigured('Module "%s" does not define a "%s" '
                                    'class.' % (module, classname))
 
+
+@I18n('title', 'mail_subject', 'mail_to', 'success_message', 'error_message', 'submit_label', 'message_template')
 class FormDefinition(models.Model):
     name = models.SlugField(_('Name'), max_length=255, unique=True)
     title = models.CharField(_('Title'), max_length=255, blank=True, null=True)
@@ -143,6 +146,7 @@ class FormDefinition(models.Model):
             name += '_'
         return name
 
+
 class FormLog(models.Model):
     created = models.DateTimeField(_('Created'), auto_now=True)
     form_definition = models.ForeignKey(FormDefinition, verbose_name=_('Form'))
@@ -153,6 +157,8 @@ class FormLog(models.Model):
         verbose_name_plural = _('Form logs')
         ordering = ['-created']
 
+
+@I18n('label', 'help_text', 'initial', 'choice_labels', 'choice_values')
 class FormDefinitionField(models.Model):
 
     form_definition = models.ForeignKey(FormDefinition)
@@ -277,6 +283,7 @@ class FormDefinitionField(models.Model):
     def __unicode__(self):
         return self.label if self.label else self.name
 
+
 if 'cms' in django_settings.INSTALLED_APPS:
     from cms.models import CMSPlugin
 
@@ -285,6 +292,7 @@ if 'cms' in django_settings.INSTALLED_APPS:
 
         def __unicode__(self):
             return self.form_definition.__unicode__()
+
 
 if 'south' in django_settings.INSTALLED_APPS:
     from south.modelsinspector import add_introspection_rules

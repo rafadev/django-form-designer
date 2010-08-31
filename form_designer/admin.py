@@ -7,6 +7,8 @@ from django.db.models import Count
 from django.http import HttpResponse
 from django.utils.encoding import smart_unicode, smart_str
 
+from easymode.i18n.admin.decorators import L10n
+
 try:
     import xlwt
 except ImportError:
@@ -19,6 +21,7 @@ from form_designer.models import FormDefinition, FormDefinitionField, FormLog
 from form_designer import settings
 from form_designer.templatetags.friendly import friendly
 
+@L10n
 class FormDefinitionFieldInline(admin.StackedInline):
     form = FormDefinitionFieldInlineForm
     model = FormDefinitionField
@@ -33,6 +36,7 @@ class FormDefinitionFieldInline(admin.StackedInline):
         (_('Model Choices'), {'fields': ['choice_model', 'choice_model_empty_label']}),
     ]
 
+@L10n
 class FormDefinitionAdmin(admin.ModelAdmin):
     fieldsets = [
         (_('Basic'), {'fields': ['name', 'method', 'action', 'title', 'allow_get_initial', 'log_data', 'success_redirect', 'success_clear']}),
