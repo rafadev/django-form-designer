@@ -111,7 +111,7 @@ class FormDefinition(models.Model):
         except TemplateSyntaxError:
             return text
 
-    def send_mail(self, form):
+    def send_mail(self, form, files=[]):
         form_data = self.get_form_data(form)
         message = self.compile_message(form_data)
         context_dict = self.get_form_data_dict(form_data)
@@ -133,8 +133,13 @@ class FormDefinition(models.Model):
         import logging
         logging.debug('Mail: '+repr(mail_from)+' --> '+repr(mail_to));
 
-        from django.core.mail import send_mail
-        send_mail(mail_subject, message, mail_from or None, mail_to, fail_silently=False)
+        from django.core.mail import EmailMessage
+        message = EmailMessage(mail_subject, message, mail_from or None, mail_to)
+
+        for file_path in files:
+            message.attach_file(file_path)
+
+        message.send(fail_silently=False)
 
     @property
     def submit_flag_name(self):
