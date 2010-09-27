@@ -6,6 +6,10 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.context_processors import csrf
 
+import os
+import random
+from datetime import datetime
+
 from form_designer.forms import DesignedForm
 from form_designer.models import FormDefinition
 
@@ -18,7 +22,7 @@ def process_form(request, form_definition, context={}, is_cms_plugin=False):
     is_submit = False
     # If the form has been submitted...
     if request.method == 'POST' and request.POST.get(form_definition.submit_flag_name):
-        form = DesignedForm(form_definition, None, request.POST)
+        form = DesignedForm(form_definition, None, request.POST, request.FILES)
         is_submit = True
     if request.method == 'GET' and request.GET.get(form_definition.submit_flag_name):
         form = DesignedForm(form_definition, None, request.GET)
@@ -26,6 +30,28 @@ def process_form(request, form_definition, context={}, is_cms_plugin=False):
 
     if is_submit:
         if form.is_valid():
+            # Handle file uploads
+            files = []
+            if hasattr(request, 'FILES'):
+                for file_key in request.FILES:
+                    file_obj = request.FILES[file_key]
+                    file_name = '%s.%s_%s' % (
+                        datetime.now().strftime('%Y%m%d'),
+                        random.randrange(0, 10000),
+                        file_obj.name,
+                    )
+
+                    if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'contact_form')):
+                        os.mkdir(os.path.join(settings.MEDIA_ROOT, 'contact_form'))
+
+                    destination = open(os.path.join(settings.MEDIA_ROOT, 'contact_form', file_name), 'wb+')
+                    for chunk in file_obj.chunks():
+                        destination.write(chunk)
+                    destination.close()
+
+                    form.cleaned_data[file_key] = os.path.join(settings.MEDIA_URL, 'contact_form', file_name)
+                    files.append(os.path.join(settings.MEDIA_ROOT, 'contact_form', file_name))
+
             # Successful submission
             messages.success(request, success_message)
             message = success_message
@@ -33,7 +59,7 @@ def process_form(request, form_definition, context={}, is_cms_plugin=False):
             if form_definition.log_data:
                 form_definition.log(form)
             if form_definition.mail_to:
-                form_definition.send_mail(form)
+                form_definition.send_mail(form, files)
             if form_definition.success_redirect and not is_cms_plugin:
                 # TODO Redirection does not work for cms plugin
                 return HttpResponseRedirect(form_definition.action or '?')
